@@ -204,6 +204,37 @@ body {
   word-break: break-word;
 }
 
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.task-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.task-tag--personal {
+  background: rgba(52, 152, 219, 0.15);
+  color: #2980b9;
+}
+
+.task-tag--work {
+  background: rgba(155, 89, 182, 0.15);
+  color: #7d3c98;
+}
+
+.task-tag--misc {
+  background: rgba(127, 140, 141, 0.2);
+  color: var(--text-muted);
+}
+
 .task-due {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -212,6 +243,25 @@ body {
 
 .task-item.done .task-due {
   color: var(--completed);
+}
+
+.task-priority-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.task-priority-dot--red {
+  background: #e74c3c;
+}
+
+.task-priority-dot--yellow {
+  background: #f1c40f;
+}
+
+.task-priority-dot--green {
+  background: #27ae60;
 }
 
 .task-delete {
@@ -332,6 +382,86 @@ body {
 
 .date-input:focus {
   border-color: var(--accent);
+}
+
+.modal-field {
+  margin-bottom: 1rem;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.tag-options {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tag-btn {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.tag-btn:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.tag-btn.active {
+  color: var(--accent);
+  background: rgba(196, 92, 38, 0.1);
+  border-color: var(--accent);
+}
+
+.priority-options {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.priority-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.priority-dot:hover {
+  transform: scale(1.1);
+}
+
+.priority-dot[data-priority="red"] {
+  background: #e74c3c;
+  border-color: #c0392b;
+}
+
+.priority-dot[data-priority="yellow"] {
+  background: #f1c40f;
+  border-color: #d4ac0d;
+}
+
+.priority-dot[data-priority="green"] {
+  background: #27ae60;
+  border-color: #1e8449;
+}
+
+.priority-dot.active {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text);
 }
 
 .date-modal-actions {
