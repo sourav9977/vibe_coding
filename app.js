@@ -1,5 +1,6 @@
 const STORAGE_KEY = "todo-app-tasks";
 const SETTINGS_KEY = "todo-app-settings";
+const FOCUS_STORAGE_KEY = "todo-app-focus";
 const DEFAULT_SETTINGS = { blockedSites: [], theme: "light" };
 
 const addForm = document.getElementById("addForm");
@@ -11,6 +12,8 @@ const filterBtns = document.querySelectorAll(".filter-btn");
 
 let tasks = loadTasks();
 let currentFilter = "all";
+let focusState = null;
+let focusTimerInterval = null;
 
 function loadSettings() {
   try {
@@ -120,6 +123,118 @@ function deleteTask(id) {
   render();
 }
 
+function updateTask(id, payload) {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) return;
+  if (payload.text !== undefined) task.text = payload.text.trim();
+  if (payload.dueDate !== undefined) task.dueDate = payload.dueDate || null;
+  if (payload.tag !== undefined) task.tag = TAGS.includes(payload.tag) ? payload.tag : "Misc";
+  if (payload.priority !== undefined) task.priority = PRIORITIES.includes(payload.priority) ? payload.priority : "green";
+  saveTasks();
+  render();
+}
+
+function openEditModal(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+  window._editingTaskId = taskId;
+  const editTaskInput = document.getElementById("editTaskInput");
+  const editDueDateInput = document.getElementById("editDueDateInput");
+  editTaskInput.value = task.text;
+  editDueDateInput.value = task.dueDate || "";
+  editDueDateInput.min = new Date().toISOString().slice(0, 10);
+  document.querySelectorAll("#editModal .tag-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tag === (task.tag || "Misc"));
+  });
+  document.querySelectorAll("#editModal .priority-dot").forEach((dot) => {
+    dot.classList.toggle("active", dot.dataset.priority === (task.priority || "green"));
+  });
+  document.getElementById("editModal").hidden = false;
+  document.body.style.overflow = "hidden";
+  editTaskInput.focus();
+}
+
+function closeEditModal() {
+  document.getElementById("editModal").hidden = true;
+  document.body.style.overflow = "";
+  window._editingTaskId = null;
+}
+
+function getSelectedTagInEdit() {
+  const btn = document.querySelector("#editModal .tag-btn.active");
+  return btn ? btn.dataset.tag : "Misc";
+}
+
+function getSelectedPriorityInEdit() {
+  const dot = document.querySelector("#editModal .priority-dot.active");
+  return dot ? dot.dataset.priority : "green";
+}
+
+function persistFocusState() {
+  if (focusState) {
+    localStorage.setItem(FOCUS_STORAGE_KEY, JSON.stringify(focusState));
+    window.dispatchEvent(
+      new CustomEvent("todoFocusUpdate", {
+        detail: {
+          active: true,
+          taskId: focusState.taskId,
+          startTime: focusState.startTime,
+          blockedSites: focusState.blockedSites || [],
+        },
+      })
+    );
+  } else {
+    localStorage.removeItem(FOCUS_STORAGE_KEY);
+    window.dispatchEvent(
+      new CustomEvent("todoFocusUpdate", { detail: { active: false } })
+    );
+  }
+}
+
+function formatElapsed(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
+}
+
+function updateFocusTimer() {
+  if (!focusState) return;
+  const elapsed = Date.now() - focusState.startTime;
+  const el = document.getElementById("focusViewTimer");
+  if (el) el.textContent = formatElapsed(elapsed);
+}
+
+function startFocus(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+  const settings = loadSettings();
+  focusState = {
+    active: true,
+    taskId,
+    startTime: Date.now(),
+    blockedSites: settings.blockedSites || [],
+  };
+  persistFocusState();
+  document.getElementById("focusViewTitle").textContent = task.text;
+  document.getElementById("focusViewTimer").textContent = "00:00:00";
+  document.getElementById("focusView").hidden = false;
+  document.querySelector(".app").style.display = "none";
+  focusTimerInterval = setInterval(updateFocusTimer, 1000);
+}
+
+function endFocus() {
+  focusState = null;
+  persistFocusState();
+  if (focusTimerInterval) {
+    clearInterval(focusTimerInterval);
+    focusTimerInterval = null;
+  }
+  document.getElementById("focusView").hidden = true;
+  document.querySelector(".app").style.display = "";
+}
+
 function clearCompleted() {
   tasks = tasks.filter((t) => !t.done);
   saveTasks();
@@ -184,6 +299,26 @@ function render() {
       }
       textWrap.appendChild(meta);
 
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "task-edit";
+      editBtn.setAttribute("aria-label", "Edit task");
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openEditModal(task.id);
+      });
+
+      const focusBtn = document.createElement("button");
+      focusBtn.type = "button";
+      focusBtn.className = "task-focus";
+      focusBtn.setAttribute("aria-label", "Start focus");
+      focusBtn.textContent = "Focus";
+      focusBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startFocus(task.id);
+      });
+
       const del = document.createElement("button");
       del.type = "button";
       del.className = "task-delete";
@@ -197,6 +332,8 @@ function render() {
       li.appendChild(check);
       li.appendChild(priorityDot);
       li.appendChild(textWrap);
+      li.appendChild(editBtn);
+      li.appendChild(focusBtn);
       li.appendChild(del);
       taskList.appendChild(li);
     });
@@ -236,17 +373,21 @@ function getSelectedPriority() {
   return dot ? dot.dataset.priority : "green";
 }
 
-document.querySelectorAll(".tag-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tag-btn").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+document.querySelectorAll(".tag-options").forEach((group) => {
+  group.querySelectorAll(".tag-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      group.querySelectorAll(".tag-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
   });
 });
 
-document.querySelectorAll(".priority-dot").forEach((dot) => {
-  dot.addEventListener("click", () => {
-    document.querySelectorAll(".priority-dot").forEach((d) => d.classList.remove("active"));
-    dot.classList.add("active");
+document.querySelectorAll(".priority-options").forEach((group) => {
+  group.querySelectorAll(".priority-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      group.querySelectorAll(".priority-dot").forEach((d) => d.classList.remove("active"));
+      dot.classList.add("active");
+    });
   });
 });
 
@@ -267,6 +408,21 @@ document.getElementById("dateModalBackdrop").addEventListener("click", () => {
   const text = window._pendingTaskText;
   if (text) addTask(text, null, getSelectedTag(), getSelectedPriority());
   closeDatePicker();
+});
+
+document.getElementById("editModalBackdrop").addEventListener("click", closeEditModal);
+document.getElementById("editModalCancel").addEventListener("click", closeEditModal);
+document.getElementById("editModalClearDate").addEventListener("click", () => {
+  document.getElementById("editDueDateInput").value = "";
+});
+document.getElementById("editModalSave").addEventListener("click", () => {
+  const id = window._editingTaskId;
+  if (!id) return;
+  const text = document.getElementById("editTaskInput").value.trim();
+  if (!text) return;
+  const dateValue = document.getElementById("editDueDateInput").value || null;
+  updateTask(id, { text, dueDate: dateValue, tag: getSelectedTagInEdit(), priority: getSelectedPriorityInEdit() });
+  closeEditModal();
 });
 
 clearCompletedBtn.addEventListener("click", clearCompleted);
@@ -327,4 +483,30 @@ themeBtns.forEach((btn) => {
 });
 
 applyTheme(loadSettings().theme);
+
+function restoreFocusStateIfActive() {
+  try {
+    const data = localStorage.getItem(FOCUS_STORAGE_KEY);
+    if (!data) return;
+    const parsed = JSON.parse(data);
+    if (!parsed.active || !parsed.taskId || !parsed.startTime) return;
+    const task = tasks.find((t) => t.id === parsed.taskId);
+    if (!task) return;
+    focusState = {
+      active: true,
+      taskId: parsed.taskId,
+      startTime: parsed.startTime,
+      blockedSites: parsed.blockedSites || [],
+    };
+    document.getElementById("focusViewTitle").textContent = task.text;
+    document.getElementById("focusView").hidden = false;
+    document.querySelector(".app").style.display = "none";
+    focusTimerInterval = setInterval(updateFocusTimer, 1000);
+    updateFocusTimer();
+  } catch (_) {}
+}
+
+document.getElementById("focusViewEnd").addEventListener("click", endFocus);
+
+restoreFocusStateIfActive();
 render();
