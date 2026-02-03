@@ -503,6 +503,7 @@ function restoreFocusStateIfActive() {
     document.querySelector(".app").style.display = "none";
     focusTimerInterval = setInterval(updateFocusTimer, 1000);
     updateFocusTimer();
+    persistFocusState();
   } catch (_) {}
 }
 

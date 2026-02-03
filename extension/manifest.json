@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Todo App Focus Blocker",
+  "version": "1.0",
+  "description": "Blocks configured websites when focus mode is active in the Todo app.",
+  "permissions": ["declarativeNetRequest", "declarativeNetRequestWithHostAccess"],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "http://127.0.0.1:8000/*",
+    "file:///*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:8000/*",
+        "http://127.0.0.1:8000/*",
+        "file:///*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Todo Focus Blocker"
+  }
+}
