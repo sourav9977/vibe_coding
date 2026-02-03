@@ -1,4 +1,6 @@
 const STORAGE_KEY = "todo-app-tasks";
+const SETTINGS_KEY = "todo-app-settings";
+const DEFAULT_SETTINGS = { blockedSites: [], theme: "light" };
 
 const addForm = document.getElementById("addForm");
 const taskInput = document.getElementById("taskInput");
@@ -9,6 +11,28 @@ const filterBtns = document.querySelectorAll(".filter-btn");
 
 let tasks = loadTasks();
 let currentFilter = "all";
+
+function loadSettings() {
+  try {
+    const data = localStorage.getItem(SETTINGS_KEY);
+    if (!data) return { ...DEFAULT_SETTINGS };
+    const parsed = JSON.parse(data);
+    return {
+      blockedSites: Array.isArray(parsed.blockedSites) ? parsed.blockedSites : [],
+      theme: ["light", "dark", "auto"].includes(parsed.theme) ? parsed.theme : "light",
+    };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+function saveSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme || loadSettings().theme;
+}
 
 function loadTasks() {
   try {
@@ -256,4 +280,51 @@ filterBtns.forEach((btn) => {
   });
 });
 
+/* Settings */
+const settingsModal = document.getElementById("settingsModal");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModalBackdrop = document.getElementById("settingsModalBackdrop");
+const blockedSitesInput = document.getElementById("blockedSitesInput");
+const settingsModalSave = document.getElementById("settingsModalSave");
+const themeBtns = document.querySelectorAll(".theme-btn");
+
+function openSettings() {
+  const s = loadSettings();
+  blockedSitesInput.value = (s.blockedSites || []).join("\n");
+  themeBtns.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.theme === (s.theme || "light"));
+  });
+  settingsModal.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeSettings() {
+  settingsModal.hidden = true;
+  document.body.style.overflow = "";
+}
+
+settingsBtn.addEventListener("click", openSettings);
+settingsModalBackdrop.addEventListener("click", closeSettings);
+
+settingsModalSave.addEventListener("click", () => {
+  const lines = blockedSitesInput.value
+    .split("\n")
+    .map((line) => line.trim().toLowerCase())
+    .filter(Boolean);
+  const activeThemeBtn = document.querySelector(".theme-btn.active");
+  const theme = activeThemeBtn ? activeThemeBtn.dataset.theme : "light";
+  const settings = { blockedSites: lines, theme };
+  saveSettings(settings);
+  applyTheme(theme);
+  closeSettings();
+});
+
+themeBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    themeBtns.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
+});
+
+applyTheme(loadSettings().theme);
 render();
