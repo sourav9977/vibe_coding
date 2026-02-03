@@ -444,12 +444,16 @@ const settingsModalSave = document.getElementById("settingsModalSave");
 const themeBtns = document.querySelectorAll(".theme-btn");
 
 function openSettings() {
+  const modal = document.getElementById("settingsModal");
+  const textarea = document.getElementById("blockedSitesInput");
+  const themeButtons = document.querySelectorAll(".theme-btn");
+  if (!modal) return;
   const s = loadSettings();
-  blockedSitesInput.value = (s.blockedSites || []).join("\n");
-  themeBtns.forEach((btn) => {
+  if (textarea) textarea.value = (s.blockedSites || []).join("\n");
+  themeButtons.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.theme === (s.theme || "light"));
   });
-  settingsModal.hidden = false;
+  modal.hidden = false;
   document.body.style.overflow = "hidden";
 }
 
@@ -457,6 +461,8 @@ function closeSettings() {
   settingsModal.hidden = true;
   document.body.style.overflow = "";
 }
+
+window.openSettings = openSettings;
 
 document.querySelector(".app").addEventListener("click", (e) => {
   if (e.target.closest("#settingsBtn")) {
