@@ -438,7 +438,6 @@ filterBtns.forEach((btn) => {
 
 /* Settings */
 const settingsModal = document.getElementById("settingsModal");
-const settingsBtn = document.getElementById("settingsBtn");
 const settingsModalBackdrop = document.getElementById("settingsModalBackdrop");
 const blockedSitesInput = document.getElementById("blockedSitesInput");
 const settingsModalSave = document.getElementById("settingsModalSave");
@@ -459,7 +458,12 @@ function closeSettings() {
   document.body.style.overflow = "";
 }
 
-settingsBtn.addEventListener("click", openSettings);
+document.querySelector(".app").addEventListener("click", (e) => {
+  if (e.target.closest("#settingsBtn")) {
+    e.preventDefault();
+    openSettings();
+  }
+});
 settingsModalBackdrop.addEventListener("click", closeSettings);
 
 settingsModalSave.addEventListener("click", () => {
