@@ -46,6 +46,22 @@
     <div class="date-modal-content">
       <h2 class="date-modal-title" id="dateModalTitle">When should this be done by?</h2>
       <input type="date" id="dueDateInput" class="date-input" min="" />
+      <div class="modal-field">
+        <label class="modal-label">Tag</label>
+        <div class="tag-options" role="group" aria-label="Task tag">
+          <button type="button" class="tag-btn" data-tag="Personal">Personal</button>
+          <button type="button" class="tag-btn" data-tag="Work">Work</button>
+          <button type="button" class="tag-btn active" data-tag="Misc">Misc</button>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Priority</label>
+        <div class="priority-options" role="group" aria-label="Task priority">
+          <button type="button" class="priority-dot" data-priority="red" title="High" aria-label="High priority"></button>
+          <button type="button" class="priority-dot" data-priority="yellow" title="Medium" aria-label="Medium priority"></button>
+          <button type="button" class="priority-dot active" data-priority="green" title="Low" aria-label="Low priority"></button>
+        </div>
+      </div>
       <div class="date-modal-actions">
         <button type="button" class="btn-secondary" id="dateModalSkip">No date</button>
         <button type="button" class="btn-primary" id="dateModalConfirm">Confirm</button>

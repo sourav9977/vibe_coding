@@ -23,12 +23,21 @@ function saveTasks() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 }
 
+const TAGS = ["Personal", "Work", "Misc"];
+const PRIORITIES = ["red", "yellow", "green"];
+
 function openDatePicker(pendingText) {
   const modal = document.getElementById("dateModal");
   const input = document.getElementById("dueDateInput");
   const today = new Date().toISOString().slice(0, 10);
   input.min = today;
   input.value = "";
+  document.querySelectorAll(".tag-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tag === "Misc");
+  });
+  document.querySelectorAll(".priority-dot").forEach((dot) => {
+    dot.classList.toggle("active", dot.dataset.priority === "green");
+  });
   modal.hidden = false;
   document.body.style.overflow = "hidden";
   input.focus();
@@ -42,7 +51,7 @@ function closeDatePicker() {
   window._pendingTaskText = null;
 }
 
-function addTask(text, dueDate = null) {
+function addTask(text, dueDate = null, tag = "Misc", priority = "green") {
   const trimmed = text.trim();
   if (!trimmed) return;
   tasks.push({
@@ -50,6 +59,8 @@ function addTask(text, dueDate = null) {
     text: trimmed,
     done: false,
     dueDate: dueDate || null,
+    tag: TAGS.includes(tag) ? tag : "Misc",
+    priority: PRIORITIES.includes(priority) ? priority : "green",
   });
   saveTasks();
   render();
@@ -125,18 +136,29 @@ function render() {
       check.setAttribute("aria-label", task.done ? "Mark incomplete" : "Mark complete");
       check.addEventListener("click", () => toggleTask(task.id));
 
+      const priorityDot = document.createElement("span");
+      priorityDot.className = "task-priority-dot task-priority-dot--" + (task.priority || "green");
+      priorityDot.setAttribute("title", task.priority === "red" ? "High" : task.priority === "yellow" ? "Medium" : "Low");
+
       const textWrap = document.createElement("div");
       textWrap.className = "task-text-wrap";
       const span = document.createElement("span");
       span.className = "task-text";
       span.textContent = task.text;
       textWrap.appendChild(span);
+      const meta = document.createElement("div");
+      meta.className = "task-meta";
+      const tagLabel = document.createElement("span");
+      tagLabel.className = "task-tag task-tag--" + (task.tag || "Misc").toLowerCase();
+      tagLabel.textContent = task.tag || "Misc";
+      meta.appendChild(tagLabel);
       if (task.dueDate) {
         const due = document.createElement("span");
         due.className = "task-due";
         due.textContent = formatDueDate(task.dueDate);
-        textWrap.appendChild(due);
+        meta.appendChild(due);
       }
+      textWrap.appendChild(meta);
 
       const del = document.createElement("button");
       del.type = "button";
@@ -149,6 +171,7 @@ function render() {
       });
 
       li.appendChild(check);
+      li.appendChild(priorityDot);
       li.appendChild(textWrap);
       li.appendChild(del);
       taskList.appendChild(li);
@@ -179,22 +202,46 @@ document.getElementById("dueDateInput").addEventListener("keydown", (e) => {
   }
 });
 
+function getSelectedTag() {
+  const btn = document.querySelector(".tag-btn.active");
+  return btn ? btn.dataset.tag : "Misc";
+}
+
+function getSelectedPriority() {
+  const dot = document.querySelector(".priority-dot.active");
+  return dot ? dot.dataset.priority : "green";
+}
+
+document.querySelectorAll(".tag-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tag-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
+});
+
+document.querySelectorAll(".priority-dot").forEach((dot) => {
+  dot.addEventListener("click", () => {
+    document.querySelectorAll(".priority-dot").forEach((d) => d.classList.remove("active"));
+    dot.classList.add("active");
+  });
+});
+
 document.getElementById("dateModalConfirm").addEventListener("click", () => {
   const text = window._pendingTaskText;
   const dateValue = document.getElementById("dueDateInput").value;
-  if (text) addTask(text, dateValue || null);
+  if (text) addTask(text, dateValue || null, getSelectedTag(), getSelectedPriority());
   closeDatePicker();
 });
 
 document.getElementById("dateModalSkip").addEventListener("click", () => {
   const text = window._pendingTaskText;
-  if (text) addTask(text, null);
+  if (text) addTask(text, null, getSelectedTag(), getSelectedPriority());
   closeDatePicker();
 });
 
 document.getElementById("dateModalBackdrop").addEventListener("click", () => {
   const text = window._pendingTaskText;
-  if (text) addTask(text, null);
+  if (text) addTask(text, null, getSelectedTag(), getSelectedPriority());
   closeDatePicker();
 });
 
