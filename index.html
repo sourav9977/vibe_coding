@@ -12,8 +12,13 @@
 <body>
   <div class="app">
     <header class="header">
-      <h1>To-Do</h1>
-      <p class="subtitle">One task at a time</p>
+      <div class="header-row">
+        <div>
+          <h1>To-Do</h1>
+          <p class="subtitle">One task at a time</p>
+        </div>
+        <button type="button" class="btn-settings" id="settingsBtn" aria-label="Settings" onclick="window.openSettings && window.openSettings()">⚙</button>
+      </div>
     </header>
 
     <form class="add-form" id="addForm">
@@ -65,6 +70,67 @@
       <div class="date-modal-actions">
         <button type="button" class="btn-secondary" id="dateModalSkip">No date</button>
         <button type="button" class="btn-primary" id="dateModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-modal" id="editModal" role="dialog" aria-labelledby="editModalTitle" aria-modal="true" hidden>
+    <div class="date-modal-backdrop" id="editModalBackdrop"></div>
+    <div class="date-modal-content">
+      <h2 class="date-modal-title" id="editModalTitle">Edit task</h2>
+      <input type="text" id="editTaskInput" class="date-input" placeholder="Task name" maxlength="200" />
+      <input type="date" id="editDueDateInput" class="date-input" min="" />
+      <div class="modal-field">
+        <label class="modal-label">Tag</label>
+        <div class="tag-options edit-modal-tags" role="group" aria-label="Task tag">
+          <button type="button" class="tag-btn" data-tag="Personal">Personal</button>
+          <button type="button" class="tag-btn" data-tag="Work">Work</button>
+          <button type="button" class="tag-btn active" data-tag="Misc">Misc</button>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Priority</label>
+        <div class="priority-options edit-modal-priority" role="group" aria-label="Task priority">
+          <button type="button" class="priority-dot" data-priority="red" title="High" aria-label="High priority"></button>
+          <button type="button" class="priority-dot" data-priority="yellow" title="Medium" aria-label="Medium priority"></button>
+          <button type="button" class="priority-dot active" data-priority="green" title="Low" aria-label="Low priority"></button>
+        </div>
+      </div>
+      <div class="date-modal-actions">
+        <button type="button" class="btn-secondary" id="editModalClearDate">Clear date</button>
+        <button type="button" class="btn-secondary" id="editModalCancel">Cancel</button>
+        <button type="button" class="btn-primary" id="editModalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="focus-view" id="focusView" hidden>
+    <div class="focus-view-inner">
+      <p class="focus-view-label">Focusing on</p>
+      <h2 class="focus-view-title" id="focusViewTitle"></h2>
+      <div class="focus-view-timer" id="focusViewTimer">00:00:00</div>
+      <button type="button" class="btn-primary focus-view-end" id="focusViewEnd">End focus</button>
+    </div>
+  </div>
+
+  <div class="settings-modal" id="settingsModal" role="dialog" aria-labelledby="settingsModalTitle" aria-modal="true" hidden>
+    <div class="settings-modal-backdrop" id="settingsModalBackdrop"></div>
+    <div class="settings-modal-content">
+      <h2 class="settings-modal-title" id="settingsModalTitle">Settings</h2>
+      <div class="modal-field">
+        <label class="modal-label" for="blockedSitesInput">Blocked sites during focus (one per line)</label>
+        <textarea id="blockedSitesInput" class="blocked-sites-input" rows="5" placeholder="facebook.com&#10;youtube.com&#10;twitter.com"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Theme</label>
+        <div class="theme-options" role="group" aria-label="App theme">
+          <button type="button" class="theme-btn" data-theme="light">Light</button>
+          <button type="button" class="theme-btn" data-theme="dark">Dark</button>
+          <button type="button" class="theme-btn" data-theme="auto">Automatic</button>
+        </div>
+      </div>
+      <div class="settings-modal-actions">
+        <button type="button" class="btn-primary" id="settingsModalSave">Save</button>
       </div>
     </div>
   </div>
