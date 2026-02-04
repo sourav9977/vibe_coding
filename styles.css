@@ -685,39 +685,283 @@ body {
   border-color: var(--accent);
 }
 
-.theme-options {
+/* Settings option row */
+.settings-option {
   display: flex;
-  gap: 0.35rem;
-}
-
-.theme-btn {
-  flex: 1;
-  padding: 0.5rem 0.6rem;
-  font-family: var(--font);
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  transition: background 0.2s;
+  margin: 0 -0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 6px;
 }
 
-.theme-btn:hover {
-  color: var(--text);
+.settings-option:hover {
   background: rgba(0, 0, 0, 0.04);
 }
 
-.theme-btn.active {
+.settings-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.settings-option-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.settings-option-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.settings-option-arrow {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.theme-options {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.theme-icon-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+
+.theme-icon-btn:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
+  transform: scale(1.05);
+}
+
+.theme-icon-btn.active {
   color: var(--accent);
   background: rgba(196, 92, 38, 0.1);
   border-color: var(--accent);
 }
 
+.theme-icon-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--surface);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 10;
+}
+
 .settings-modal-actions {
   margin-top: 1.25rem;
   display: flex;
+  justify-content: flex-end;
+}
+
+/* Blocked sites modal */
+.blocked-sites-modal-content {
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.blocked-sites-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.blocked-sites-header .settings-modal-title {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.blocked-sites-back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.blocked-sites-back-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.blocked-sites-add-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.blocked-sites-add-btn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.blocked-sites-description {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.blocked-sites-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.blocked-site-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+}
+
+.blocked-site-name {
+  font-size: 0.9rem;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.blocked-site-remove {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.blocked-site-remove:hover {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.1);
+}
+
+.blocked-sites-empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Add site modal */
+.add-site-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.add-site-modal[hidden] {
+  display: none;
+}
+
+.add-site-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.5);
+  cursor: pointer;
+}
+
+.add-site-modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  padding: 1.5rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(26, 26, 26, 0.2);
+}
+
+.add-site-modal-title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.add-site-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.add-site-input::placeholder {
+  color: var(--text-muted);
+}
+
+.add-site-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(196, 92, 38, 0.15);
+}
+
+.add-site-modal-actions {
+  display: flex;
+  gap: 0.5rem;
   justify-content: flex-end;
 }
 
@@ -734,6 +978,19 @@ body {
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
+[data-theme="dark"] .settings-option:hover,
+[data-theme="dark"] .theme-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .blocked-sites-back-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .blocked-site-item {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 /* Automatic theme: follow system */
 @media (prefers-color-scheme: dark) {
   [data-theme="auto"] {
@@ -746,5 +1003,18 @@ body {
     --border: #404040;
     --completed: #808080;
     --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="auto"] .settings-option:hover,
+  [data-theme="auto"] .theme-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  [data-theme="auto"] .blocked-sites-back-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="auto"] .blocked-site-item {
+    background: rgba(255, 255, 255, 0.04);
   }
 }

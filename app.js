@@ -439,17 +439,132 @@ filterBtns.forEach((btn) => {
 /* Settings */
 const settingsModal = document.getElementById("settingsModal");
 const settingsModalBackdrop = document.getElementById("settingsModalBackdrop");
-const blockedSitesInput = document.getElementById("blockedSitesInput");
 const settingsModalSave = document.getElementById("settingsModalSave");
-const themeBtns = document.querySelectorAll(".theme-btn");
+const themeIconBtns = document.querySelectorAll(".theme-icon-btn");
+
+// Blocked sites modal elements
+const blockedSitesOption = document.getElementById("blockedSitesOption");
+const blockedSitesCount = document.getElementById("blockedSitesCount");
+const blockedSitesPage = document.getElementById("blockedSitesPage");
+const blockedSitesBackdrop = document.getElementById("blockedSitesBackdrop");
+const blockedSitesBack = document.getElementById("blockedSitesBack");
+const blockedSitesAdd = document.getElementById("blockedSitesAdd");
+const blockedSitesList = document.getElementById("blockedSitesList");
+const blockedSitesEmpty = document.getElementById("blockedSitesEmpty");
+
+// Add site modal elements
+const addSiteModal = document.getElementById("addSiteModal");
+const addSiteModalBackdrop = document.getElementById("addSiteModalBackdrop");
+const addSiteInput = document.getElementById("addSiteInput");
+const addSiteCancel = document.getElementById("addSiteCancel");
+const addSiteSave = document.getElementById("addSiteSave");
+
+// Temporary storage for blocked sites being edited
+let tempBlockedSites = [];
+
+function updateBlockedSitesCount() {
+  const s = loadSettings();
+  const count = (s.blockedSites || []).length;
+  blockedSitesCount.textContent = count === 1 ? "1 site" : `${count} sites`;
+}
+
+function renderBlockedSitesList() {
+  blockedSitesList.innerHTML = "";
+  if (tempBlockedSites.length === 0) {
+    blockedSitesEmpty.style.display = "block";
+  } else {
+    blockedSitesEmpty.style.display = "none";
+    tempBlockedSites.forEach((site, index) => {
+      const li = document.createElement("li");
+      li.className = "blocked-site-item";
+      
+      const name = document.createElement("span");
+      name.className = "blocked-site-name";
+      name.textContent = site;
+      
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "blocked-site-remove";
+      removeBtn.setAttribute("aria-label", "Remove site");
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", () => {
+        tempBlockedSites.splice(index, 1);
+        renderBlockedSitesList();
+        // Auto-save when removing
+        const currentSettings = loadSettings();
+        saveSettings({ ...currentSettings, blockedSites: tempBlockedSites });
+        updateBlockedSitesCount();
+      });
+      
+      li.appendChild(name);
+      li.appendChild(removeBtn);
+      blockedSitesList.appendChild(li);
+    });
+  }
+}
+
+function openBlockedSitesPage() {
+  const s = loadSettings();
+  tempBlockedSites = [...(s.blockedSites || [])];
+  renderBlockedSitesList();
+  settingsModal.hidden = true;
+  blockedSitesPage.hidden = false;
+}
+
+function closeBlockedSitesPage() {
+  blockedSitesPage.hidden = true;
+  settingsModal.hidden = false;
+  updateBlockedSitesCount();
+}
+
+function openAddSiteModal() {
+  addSiteInput.value = "";
+  addSiteModal.hidden = false;
+  addSiteInput.focus();
+}
+
+function closeAddSiteModal() {
+  addSiteModal.hidden = true;
+  addSiteInput.value = "";
+}
+
+function saveNewSite() {
+  const site = addSiteInput.value.trim().toLowerCase();
+  if (!site) return;
+  if (!tempBlockedSites.includes(site)) {
+    tempBlockedSites.push(site);
+    renderBlockedSitesList();
+    // Auto-save when adding
+    const currentSettings = loadSettings();
+    saveSettings({ ...currentSettings, blockedSites: tempBlockedSites });
+    updateBlockedSitesCount();
+  }
+  closeAddSiteModal();
+}
+
+blockedSitesOption.addEventListener("click", openBlockedSitesPage);
+blockedSitesBack.addEventListener("click", closeBlockedSitesPage);
+blockedSitesBackdrop.addEventListener("click", closeBlockedSitesPage);
+blockedSitesAdd.addEventListener("click", openAddSiteModal);
+addSiteModalBackdrop.addEventListener("click", closeAddSiteModal);
+addSiteCancel.addEventListener("click", closeAddSiteModal);
+addSiteSave.addEventListener("click", saveNewSite);
+addSiteInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    saveNewSite();
+  }
+  if (e.key === "Escape") {
+    closeAddSiteModal();
+  }
+});
 
 function openSettings() {
   const modal = document.getElementById("settingsModal");
-  const textarea = document.getElementById("blockedSitesInput");
-  const themeButtons = document.querySelectorAll(".theme-btn");
+  const themeButtons = document.querySelectorAll(".theme-icon-btn");
   if (!modal) return;
   const s = loadSettings();
-  if (textarea) textarea.value = (s.blockedSites || []).join("\n");
+  updateBlockedSitesCount();
   themeButtons.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.theme === (s.theme || "light"));
   });
@@ -473,26 +588,24 @@ document.querySelector(".app").addEventListener("click", (e) => {
 settingsModalBackdrop.addEventListener("click", closeSettings);
 
 settingsModalSave.addEventListener("click", () => {
-  const lines = blockedSitesInput.value
-    .split("\n")
-    .map((line) => line.trim().toLowerCase())
-    .filter(Boolean);
-  const activeThemeBtn = document.querySelector(".theme-btn.active");
+  const activeThemeBtn = document.querySelector(".theme-icon-btn.active");
   const theme = activeThemeBtn ? activeThemeBtn.dataset.theme : "light";
-  const settings = { blockedSites: lines, theme };
+  const currentSettings = loadSettings();
+  const settings = { blockedSites: currentSettings.blockedSites || [], theme };
   saveSettings(settings);
   applyTheme(theme);
   closeSettings();
 });
 
-themeBtns.forEach((btn) => {
+themeIconBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
-    themeBtns.forEach((b) => b.classList.remove("active"));
+    themeIconBtns.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
   });
 });
 
 applyTheme(loadSettings().theme);
+updateBlockedSitesCount();
 
 function restoreFocusStateIfActive() {
   try {
